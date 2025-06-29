@@ -1,6 +1,8 @@
 [tools]
+docker-compose = "latest"
 pre-commit = "latest"
 python = "3.13"
+trivy = "latest"
 uv = "latest"
 
 [settings]

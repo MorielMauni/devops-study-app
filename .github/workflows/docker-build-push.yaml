@@ -1,16 +1,17 @@
 name: Build and Push Docker Images
+
 on:
   push:
     tags:
       - "backend*"
+
 env:
   REGISTRY: ghcr.io
-  BACKEND_IMAGE_NAME: ${{ github.repository_owner | toLower }}/study-app-api
+
 jobs:
   build-and-push-backend:
     name: Build and Push Backend
     runs-on: ubuntu-latest
-    # Only run for backend tags
     if: contains(github.ref, 'backend')
     permissions:
       contents: read
@@ -26,9 +27,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract tag name
-        id: tag
-        run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      - name: Set lowercase repo owner and extract tag
+        id: vars
+        run: |
+          echo "REPO_OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+          echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Build and push Backend Docker image
         uses: docker/build-push-action@v5
@@ -36,8 +39,8 @@ jobs:
           context: ./src/backend
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:${{ steps.tag.outputs.TAG }}
-            ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.REPO_OWNER_LC }}/study-app-api:${{ steps.vars.outputs.TAG }}
+            ${{ env.REGISTRY }}/${{ env.REPO_OWNER_LC }}/study-app-api:latest
     outputs:
-      tag: ${{ steps.tag.outputs.TAG }}
+      tag: ${{ steps.vars.outputs.TAG }}
       app: backend
